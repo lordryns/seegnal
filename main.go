@@ -80,7 +80,7 @@ type network struct {
 
 func scanForExistingNetworks() ([]network, error)  {
 	var networks []network
-	var c = exec.Command("nmcli","-t", "-f", " SSID,SIGNAL,SECURITY", " device", " wifi", " list")
+	var c = exec.Command("nmcli", "-t", "-f", "SSID,SIGNAL,SECURITY", "device", "wifi", "list")
 	var out, err = c.Output();
 
 	if err != nil {
