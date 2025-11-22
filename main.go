@@ -92,7 +92,7 @@ func scanForExistingNetworks() ([]network, error)  {
 	for _, s := range s_slc {
 		var sp = strings.Split(s, ":")
 
-		if len(sp) > 0 {
+		if len(sp) > 1 {
 			var si, serr  = strconv.Atoi(sp[1])
 			networks = append(networks, network{sp[0], func () int { if serr != nil {return 0} else {return si}}() , sp[2]}) 
 		}
