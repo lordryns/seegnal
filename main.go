@@ -19,16 +19,15 @@ func main() {
 	window.SetFixedSize(true)
 	window.Resize(fyne.NewSize(500, 500))
 
-	//var networks []network
-	go func () {
-		scanForExistingNetworks()
-	}()
 	var rescanButton = widget.NewButton("Rescan", func() {
 	});
 	rescanButton.Importance = widget.HighImportance
 	
 
 	go func() {
+		fyne.Do(func() {
+			rescanButton.SetText("Scanning...")
+		})
     net, err := scanForExistingNetworks()
 
     fyne.Do(func() {
