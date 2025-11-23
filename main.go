@@ -20,8 +20,8 @@ import (
 
 var networks = []network{};
 
-func main() {
 
+func main() {
 	var app = app.New()
 	var window = app.NewWindow("Seegnal")
 	window.SetFixedSize(true)
@@ -33,32 +33,37 @@ func main() {
 
 
 	var topBar = container.NewHBox(widget.NewLabel("Seegnal 0.1"), layout.NewSpacer(), rescanButton)
-
+	var mainContainer = container.NewStack(container.NewCenter(widget.NewLabel("Welcome to Seegnal!")))
 
 	var wifiList = widget.NewList(
 		func() int {
 			return len(networks)
 		},
 		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
+			return widget.NewLabel("")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			o.(*widget.Label).SetText(networks[i].ssid)
 		})
 
+		var selected int
+		wifiList.OnSelected = func(id widget.ListItemID) {
+			selected = id
+			loadNetworkDetailsInContainer(mainContainer, networks[id])
+		}
+
 		
 		rescanButton.OnTapped = func() {
-			go scanAndReflectChangesOnMain(rescanButton, wifiList)
+			go scanAndReflectChangesOnMain(rescanButton, wifiList, selected, mainContainer)
 	}
 
 
-	go scanAndReflectChangesOnMain(rescanButton, wifiList)
+	go scanAndReflectChangesOnMain(rescanButton, wifiList, -1, mainContainer)
 
 
 
 		var header = container.NewBorder(container.NewVBox(topBar, widget.NewSeparator()), nil, nil, nil)
 
-		var mainContainer = container.NewVBox()
 		var splitContainer = container.NewHSplit(wifiList, mainContainer)
 		splitContainer.SetOffset(0.3)
 	window.SetContent(container.NewBorder(header, nil, nil, nil, splitContainer))
@@ -74,8 +79,14 @@ func main() {
 }
 
 
+func loadNetworkDetailsInContainer(c *fyne.Container, net network) {
+	var tab = container.NewVBox(widget.NewLabel(fmt.Sprintf("SSID: %v", net.ssid)))
+	c.Objects = []fyne.CanvasObject{tab}
+}
 
-func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.List) {
+
+
+func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.List, selected int, mainContainer *fyne.Container) {
 		fyne.Do(func() {
 			rescanButton.SetText("Scanning...")
 			log.Info("Scanning...")
@@ -96,9 +107,33 @@ func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.L
 			fyne.CurrentApp().SendNotification(
                 fyne.NewNotification("Found", fmt.Sprintf("%v networks found!", len(net))),
             )
+		} else {
+			mainContainer.Objects = []fyne.CanvasObject{container.NewCenter(widget.NewLabel("No wifi networks detected!"))}
 		}
 
-		networks = net 
+
+		var foundSelected int = -1
+		if selected > -1 {
+			foundSelected = func () int {
+				// this is madness (someone stop me)
+				for _, n := range networks {
+					for j, k := range net {	
+						if n == k {
+							return j
+						}
+					}
+				}
+				return -1
+			}()
+		}
+
+
+		networks = net
+		if foundSelected > -1 {
+			wifiList.Select(foundSelected)
+		} else {
+			wifiList.UnselectAll()
+		}
 		wifiList.Refresh()
 		log.Infof("Scan completed! Found: %v networks\n", len(networks))
 
