@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -11,12 +13,14 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/urfave/cli/v3"
 )
 
 
 var networks = []network{};
 
 func main() {
+
 	var app = app.New()
 	var window = app.NewWindow("Seegnal")
 	window.SetFixedSize(true)
@@ -58,7 +62,14 @@ func main() {
 		splitContainer.SetOffset(0.3)
 	window.SetContent(container.NewBorder(header, nil, nil, nil, splitContainer))
 
-	window.ShowAndRun()
+	var cmd = cli.Command{Name: "seegnal", Usage: "Lightweight wifi app", Action: func(ctx context.Context, c *cli.Command) error {
+		window.ShowAndRun()
+		return nil
+	}}
+
+	if err := cmd.Run(context.Background(), os.Args); err != nil {
+		fmt.Println("Could not start the cli...")
+	}
 }
 
 
@@ -66,21 +77,30 @@ func main() {
 func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.List) {
 		fyne.Do(func() {
 			rescanButton.SetText("Scanning...")
+			fmt.Println("Scanning...")
 		})
     net, err := scanForExistingNetworks()
 
     fyne.Do(func() {
         if err != nil {
+			fmt.Println("Failed to scan for networks, is this an nmcli issue?")
             fyne.CurrentApp().SendNotification(
                 fyne.NewNotification("Error", "Failed to scan for networks!"),
             )
             return
         }
 
+	
+		if len(net) > 0 {
+			fyne.CurrentApp().SendNotification(
+                fyne.NewNotification("Found", "Scan found some networks!"),
+            )
+		}
 
 		networks = net 
 		wifiList.Refresh()
-		fmt.Println(net)
+		fmt.Printf("Scan successful! Found: %v\n", len(networks))
+
         rescanButton.SetText("Rescan")
     })
 }
