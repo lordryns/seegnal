@@ -33,10 +33,9 @@ func main() {
 	rescanButton.Importance = widget.HighImportance
 
 	var wifiSwitch = kxwidget.NewSwitch(func(on bool) {
-
+		toggleWifiState(on)
 	})
 
-	log.Warn(checkIfWifiIsOn())
 	wifiSwitch.SetOn(checkIfWifiIsOn())
 
 
@@ -84,6 +83,14 @@ func main() {
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		log.Error(fmt.Errorf("Could not start the cli..."))
 	}
+}
+
+func toggleWifiState(on bool) {
+	_ = exec.Command("nmcli", "radio", "wifi", func () string {
+		if on { return "on" } else {return "off"}
+	}()).Run()
+	
+
 }
 
 func checkIfWifiIsOn() bool {
