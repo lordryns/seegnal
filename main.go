@@ -15,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/charmbracelet/log"
 	"github.com/urfave/cli/v3"
+	kxwidget "github.com/ErikKalkoken/fyne-kx/widget"
 )
 
 
@@ -31,8 +32,15 @@ func main() {
 	});
 	rescanButton.Importance = widget.HighImportance
 
+	var wifiSwitch = kxwidget.NewSwitch(func(on bool) {
 
-	var topBar = container.NewHBox(widget.NewLabel("Seegnal 0.1"), layout.NewSpacer(), rescanButton)
+	})
+
+	log.Warn(checkIfWifiIsOn())
+	wifiSwitch.SetOn(checkIfWifiIsOn())
+
+
+	var topBar = container.NewHBox(widget.NewLabel("Seegnal 0.1"), layout.NewSpacer(), rescanButton, widget.NewLabel("WIFI"), wifiSwitch)
 	var mainContainer = container.NewStack(container.NewCenter(widget.NewLabel("Welcome to Seegnal!")))
 
 	var wifiList = widget.NewList(
@@ -78,9 +86,21 @@ func main() {
 	}
 }
 
+func checkIfWifiIsOn() bool {
+	var res, err = exec.Command("nmcli", "radio", "wifi").Output()
+	if err != nil {
+		log.Error(err)
+		return false 
+	}
+
+	return strings.TrimSpace(string(res)) == "enabled" 
+}
 
 func loadNetworkDetailsInContainer(c *fyne.Container, net network) {
-	var tab = container.NewVBox(widget.NewLabel(fmt.Sprintf("SSID: %v", net.ssid)))
+
+	var stateContainer = container.NewCenter(widget.NewLabel("OK"))
+	var ssidstre = container.NewBorder(nil, nil, nil, widget.NewLabel(fmt.Sprintf("SSID: %v", net.ssid)), widget.NewLabel(fmt.Sprintf("STRENGTH: %v", net.strength)))
+	var tab = container.NewVBox(stateContainer, ssidstre)
 	c.Objects = []fyne.CanvasObject{tab}
 }
 

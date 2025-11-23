@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	fyne.io/fyne/v2 v2.7.1
+	github.com/ErikKalkoken/fyne-kx v0.6.4
 	github.com/charmbracelet/log v0.4.2
 	github.com/urfave/cli/v3 v3.6.1
 )
@@ -34,7 +35,6 @@ require (
 	github.com/hack-pad/safejs v0.1.0 // indirect
 	github.com/jeandeaual/go-locale v0.0.0-20250612000132-0ef82f21eade // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
