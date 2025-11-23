@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/charmbracelet/log"
 	"github.com/urfave/cli/v3"
 )
 
@@ -68,7 +69,7 @@ func main() {
 	}}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		fmt.Println("Could not start the cli...")
+		log.Error(fmt.Errorf("Could not start the cli..."))
 	}
 }
 
@@ -77,13 +78,13 @@ func main() {
 func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.List) {
 		fyne.Do(func() {
 			rescanButton.SetText("Scanning...")
-			fmt.Println("Scanning...")
+			log.Info("Scanning...")
 		})
     net, err := scanForExistingNetworks()
 
     fyne.Do(func() {
         if err != nil {
-			fmt.Println("Failed to scan for networks, is this an nmcli issue?")
+			log.Error("Failed to scan for networks, is this an nmcli issue?")
             fyne.CurrentApp().SendNotification(
                 fyne.NewNotification("Error", "Failed to scan for networks!"),
             )
@@ -93,13 +94,13 @@ func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.L
 	
 		if len(net) > 0 {
 			fyne.CurrentApp().SendNotification(
-                fyne.NewNotification("Found", "Scan found some networks!"),
+                fyne.NewNotification("Found", fmt.Sprintf("%v networks found!", len(net))),
             )
 		}
 
 		networks = net 
 		wifiList.Refresh()
-		fmt.Printf("Scan successful! Found: %v\n", len(networks))
+		log.Infof("Scan completed! Found: %v networks\n", len(networks))
 
         rescanButton.SetText("Rescan")
     })
