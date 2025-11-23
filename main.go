@@ -13,6 +13,9 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+
+var networks = []network{};
+
 func main() {
 	var app = app.New()
 	var window = app.NewWindow("Seegnal")
@@ -22,9 +25,45 @@ func main() {
 	var rescanButton = widget.NewButton("Rescan", func() {
 	});
 	rescanButton.Importance = widget.HighImportance
-	
 
-	go func() {
+
+	var topBar = container.NewHBox(widget.NewLabel("Seegnal 0.1"), layout.NewSpacer(), rescanButton)
+
+
+	var wifiList = widget.NewList(
+		func() int {
+			return len(networks)
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("template")
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(networks[i].ssid)
+		})
+
+		
+		rescanButton.OnTapped = func() {
+			go scanAndReflectChangesOnMain(rescanButton, wifiList)
+	}
+
+
+	go scanAndReflectChangesOnMain(rescanButton, wifiList)
+
+
+
+		var header = container.NewBorder(container.NewVBox(topBar, widget.NewSeparator()), nil, nil, nil)
+
+		var mainContainer = container.NewVBox()
+		var splitContainer = container.NewHSplit(wifiList, mainContainer)
+		splitContainer.SetOffset(0.3)
+	window.SetContent(container.NewBorder(header, nil, nil, nil, splitContainer))
+
+	window.ShowAndRun()
+}
+
+
+
+func scanAndReflectChangesOnMain(rescanButton *widget.Button, wifiList *widget.List) {
 		fyne.Do(func() {
 			rescanButton.SetText("Scanning...")
 		})
@@ -38,36 +77,12 @@ func main() {
             return
         }
 
+
+		networks = net 
+		wifiList.Refresh()
 		fmt.Println(net)
         rescanButton.SetText("Rescan")
     })
-}()
-
-
-	var topBar = container.NewHBox(widget.NewLabel("Seegnal 0.1"), layout.NewSpacer(), rescanButton)
-
-
-	var data = []string{"one", "two", "three"};
-	var wifiList = widget.NewList(
-		func() int {
-			return len(data)
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
-		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(data[i])
-		})
-
-
-		var header = container.NewBorder(container.NewVBox(topBar, widget.NewSeparator()), nil, nil, nil)
-
-		var mainContainer = container.NewVBox()
-		var splitContainer = container.NewHSplit(wifiList, mainContainer)
-		splitContainer.SetOffset(0.3)
-	window.SetContent(container.NewBorder(header, nil, nil, nil, splitContainer))
-
-	window.ShowAndRun()
 }
 
 
